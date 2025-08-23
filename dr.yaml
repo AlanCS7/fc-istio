@@ -4,10 +4,16 @@ metadata:
   name: nginx-dr
 spec:
   host: nginx-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN # Os pods serão balanceados em round-robin, serve para todos os subsets
   subsets:
     - name: v1
       labels:
         version: A
+      trafficPolicy:
+        loadBalancer:
+          simple: LEAST_CONN # Os pods serão balanceados em least-conn, serve para um subset específico
     - name: v2
       labels:
         version: B
