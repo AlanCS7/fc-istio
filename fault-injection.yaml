@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+    - nginx-service # Service name do kubernetes
+  http:
+    - fault:
+        # delay: # estou injetando uma delay nas requisições
+        #   fixedDelay: 10s # delay de 10s
+        #   percentage:
+        #     value: 50 # 50% das requisições terão essa delay
+        abort: # estou injetando um erro 504 (Gateway Timeout) nas requisições
+          httpStatus: 504 # código do erro
+          percentage:
+            value: 100 # 100% das requisições terão esse erro
+      route:
+        - destination:
+            host: nginx-service
+            subset: all
+
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: nginx-dr
+spec:
+  host: nginx-service
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: "x-user" # Nome do header que será usado para o hash
+  subsets:
+    - name: all
+      labels:
+        app: nginx
