@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: circuit-breaker-servicex
+spec:
+  host: servicex-service.default.svc.cluster.local
+  trafficPolicy:
+    outlierDetection: # Configuração do Circuit Breaker
+      # consecutive5xxErrors: 20 # Número de erros 5xx consecutivos para ejetar a instância (abrir o Circuit Breaker)
+      consecutiveGatewayErrors: 10 # Número de erros 5xx consecutivos para ejetar a instância (abrir o Circuit Breaker)
+      interval: 20s # Intervalo para verificar os erros
+      baseEjectionTime: 30s # Tempo base de ejeção
+      maxEjectionPercent: 100 # Percentual máximo de ejeção
+
+# as configurações acima estão fazendo com que o Istio abra o Circuit Breaker sempre que
+# houver 10 erros consecutivos de gateway em um intervalo de 20 segundos.

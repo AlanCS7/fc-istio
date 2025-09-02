@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: servicex-vs
+spec:
+  hosts:
+    - servicex-service # Service name do kubernetes
+  http:
+    - route:
+        - destination:
+            host: servicex-service
+            port:
+              number: 80
