@@ -24,22 +24,7 @@ spec:
   gateways:
     - ingress-gateway-k3s
   http:
-    - match:
-        - uri:
-            prefix: /b
-          route:
-            - destination:
-                host: nginx-service
-                subset: v2
-
-    - match:
-        - uri:
-            prefix: /
-          route:
-            - destination:
-                host: nginx-service
-                subset: v1
-      route:
+    - route:
         - destination:
             host: nginx-service
             subset: v1
