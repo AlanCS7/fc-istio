@@ -1,0 +1,71 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: ingress-gateway-k3s
+spec:
+  selector:
+    istio: ingressgateway # use Istio's built-in gateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: http2
+      hosts:
+        - "*"
+
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: nginx-vs
+spec:
+  hosts:
+    - "*" # Service name do kubernetes
+  gateways:
+    - ingress-gateway-k3s
+  http:
+    - match:
+        - uri:
+            prefix: /b
+          route:
+            - destination:
+                host: nginx-service
+                subset: v2
+
+    - match:
+        - uri:
+            prefix: /
+          route:
+            - destination:
+                host: nginx-service
+                subset: v1
+      route:
+        - destination:
+            host: nginx-service
+            subset: v1
+          weight: 0
+        - destination:
+            host: nginx-service
+            subset: v2
+          weight: 100
+
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: nginx-dr
+spec:
+  host: nginx-service
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN # Os pods serão balanceados em round-robin, serve para todos os subsets
+  subsets:
+    - name: v1
+      labels:
+        version: A
+      trafficPolicy:
+        loadBalancer:
+          simple: LEAST_CONN # Os pods serão balanceados em least-conn, serve para um subset específico
+    - name: v2
+      labels:
+        version: B
